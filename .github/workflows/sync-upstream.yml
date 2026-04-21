@@ -11,8 +11,38 @@ jobs:
     permissions:
       contents: write
       workflows: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
-      - run: gh repo sync ${{ github.repository }} --source openclaw/openclaw --branch main --force
+        with:
+          fetch-depth: 0
+
+      - name: Sync with upstream
+        run: gh repo sync ${{ github.repository }} --source openclaw/openclaw --branch main --force
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if fix shipped in stable release
+        run: |
+          git fetch --tags https://github.com/openclaw/openclaw.git
+          STABLE=$(git tag --contains 1ce2596195 | grep -vE 'beta|alpha|rc' | sort -V | head -1)
+          if [ -z "$STABLE" ]; then
+            echo "Fix not yet in a stable release."
+            exit 0
+          fi
+          echo "Fix found in stable release: $STABLE"
+          EXISTING=$(gh issue list \
+            --repo ${{ github.repository }} \
+            --search "Matrix fix shipped in stable" \
+            --state all \
+            --json number | jq length)
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "Notification issue already exists, skipping."
+            exit 0
+          fi
+          gh issue create \
+            --repo ${{ github.repository }} \
+            --title "Matrix fix shipped in stable release $STABLE" \
+            --body "Your Matrix thread_spawn fix (openclaw/openclaw#67643) has landed in stable release **\`$STABLE\`**.\n\nRetire the dist patch:\n\`\`\`\nnpm i -g openclaw@latest\n\`\`\`"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
