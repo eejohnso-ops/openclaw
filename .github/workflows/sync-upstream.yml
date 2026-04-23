@@ -13,6 +13,8 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v4.2.2
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           fetch-depth: 0
 
@@ -22,8 +24,18 @@ jobs:
           GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
 
       - name: Check if fix shipped in stable release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git fetch --tags https://github.com/openclaw/openclaw.git
+          # Fetch upstream commits and tags so git tag --contains works
+          git fetch https://github.com/openclaw/openclaw.git \
+            '+refs/heads/main:refs/remotes/upstream/main' \
+            '+refs/tags/*:refs/tags/*' \
+            --force --no-tags
+          git fetch https://github.com/openclaw/openclaw.git \
+            '+refs/tags/*:refs/tags/*' \
+            --force
+
           STABLE=$(git tag --contains 1ce2596195 | grep -vE 'beta|alpha|rc' | sort -V | head -1)
           if [ -z "$STABLE" ]; then
             echo "Fix not yet in a stable release."
@@ -42,6 +54,4 @@ jobs:
           gh issue create \
             --repo ${{ github.repository }} \
             --title "Matrix fix shipped in stable release $STABLE" \
-            --body "Your Matrix thread_spawn fix (openclaw/openclaw#67643) has landed in stable release **\`$STABLE\`**.\n\nRetire the dist patch:\n\`\`\`\nnpm i -g openclaw@latest\n\`\`\`"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            --body "Your Matrix thread_spawn fix (openclaw/openclaw#67643) has landed in stable release \`$STABLE\`.\n\nRetire the dist patch:\n\`\`\`\nnpm i -g openclaw@latest\n\`\`\`"
