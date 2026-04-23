@@ -12,14 +12,14 @@ jobs:
       contents: write
       issues: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
 
       - name: Sync with upstream
         run: gh repo sync ${{ github.repository }} --source openclaw/openclaw --branch main --force
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
 
       - name: Check if fix shipped in stable release
         run: |
