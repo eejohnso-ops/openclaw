@@ -1,10 +1,12 @@
 import type { CliSessionBinding, SessionSystemPromptReport } from "../../config/sessions/types.js";
+import type { DiagnosticTraceContext } from "../../infra/diagnostic-trace-context.js";
 import type { MessagingToolSend } from "../pi-embedded-messaging.types.js";
 
 export type EmbeddedPiAgentMeta = {
   sessionId: string;
   provider: string;
   model: string;
+  agentHarnessId?: string;
   cliSessionBinding?: CliSessionBinding;
   compactionCount?: number;
   promptTokens?: number;
@@ -140,6 +142,7 @@ export type EmbeddedPiRunResult = {
     audioAsVoice?: boolean;
   }>;
   meta: EmbeddedPiRunMeta;
+  diagnosticTrace?: DiagnosticTraceContext;
   // True if a messaging tool successfully sent a message.
   // Used to suppress agent's confirmation text.
   didSendViaMessagingTool?: boolean;
