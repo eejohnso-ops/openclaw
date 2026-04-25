@@ -6,6 +6,7 @@ export type EmbeddedPiAgentMeta = {
   sessionId: string;
   provider: string;
   model: string;
+  contextTokens?: number;
   agentHarnessId?: string;
   cliSessionBinding?: CliSessionBinding;
   compactionCount?: number;
@@ -106,6 +107,7 @@ export type EmbeddedPiRunMeta = {
   finalAssistantRawText?: string;
   replayInvalid?: boolean;
   livenessState?: EmbeddedRunLivenessState;
+  agentHarnessResultClassification?: "empty" | "reasoning-only" | "planning-only";
   error?: {
     kind:
       | "context_overflow"

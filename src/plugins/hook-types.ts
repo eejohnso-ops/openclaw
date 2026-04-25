@@ -192,6 +192,19 @@ export type PluginHookLlmOutputEvent = {
   sessionId: string;
   provider: string;
   model: string;
+  /**
+   * Fully resolved provider/model ref used for the call.
+   *
+   * This intentionally keeps the provider prefix so operator tooling can
+   * distinguish e.g. openai-codex/gpt-5.4 from codex/gpt-5.4 even when display
+   * names collapse to just the model id.
+   */
+  resolvedRef?: string;
+  /**
+   * Harness/backend responsible for the model loop. Kept separate from
+   * `resolvedRef` so provider/model consumers keep a stable parse contract.
+   */
+  harnessId?: string;
   assistantTexts: string[];
   lastAssistant?: unknown;
   usage?: {
@@ -204,6 +217,7 @@ export type PluginHookLlmOutputEvent = {
 };
 
 export type PluginHookAgentEndEvent = {
+  runId?: string;
   messages: unknown[];
   success: boolean;
   error?: string;
